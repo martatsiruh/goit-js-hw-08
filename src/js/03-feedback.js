@@ -1,35 +1,46 @@
 import throttle from 'lodash.throttle';
 
 const feedbackFormEl = document.querySelector('.feedback-form');
-
-feedbackFormEl.addEventListener("submit", clickSubmitForm);
-
+const inputEl = document.querySelector('.feedback-form input');
+const textareaEl = document.querySelector('.feedback-form textarea');
 
 
 // хранилище обновлялось не чаще чем раз в 500 миллисекунд
 const THROTTLE_WAIT_TIME = 500;
 const STORAGE_KEY = "feedback-form-state";
-const formData = {};
+let formData = {};
+
+feedbackFormEl.addEventListener('input', throttle(onFormInput, THROTTLE_WAIT_TIME));
+feedbackFormEl.addEventListener('submit', clickSubmitForm);
+
+
+function onFormInput(event) {
+    formData = {
+        email: inputEl.value,
+        message: textareaEl.value,
+    }
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+    //formData[event.target.name] = event.target.value;
+    //localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+}
 
 populateTextarea();
 
-feedbackFormEl.addEventListener("input", throttle(onFormInput, THROTTLE_WAIT_TIME));
-
-function onFormInput(event) {
-    formData[event.target.name] = event.target.value;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
-}
-
 function populateTextarea() {
-    let savedMessage = localStorage.getItem(STORAGE_KEY);
-
+    /**let savedMessage = localStorage.getItem(STORAGE_KEY);
     if (savedMessage) {
-        savedMessage = JSON.parse(savedInputs);
+        savedMessage = JSON.parse(savedMessage);
 
         Object.entries(savedMessage).forEach(([name, value]) => {
             formData[name] = value
             feedbackFormEl[name].value = value
         })
+    }*/
+    const dataTextarea = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (dataTextarea) {
+        inputEl.value = dataTextarea.email;
+        textareaEl.value = dataTextarea.message;
     }
 }
 
@@ -37,7 +48,10 @@ function populateTextarea() {
 function clickSubmitForm(event) {
     event.preventDefault();
 
-    console.log(formData);
-    localStorage.removeItem(STORAGE_KEY)
-    feedbackFormEl.reset()
+    event.currentTarget.reset();
+
+    //console.log(dataTextarea)
+    console.log(JSON.parse(localStorage.getItem(STORAGE_KEY)));
+    localStorage.removeItem(STORAGE_KEY);
+    
 }
